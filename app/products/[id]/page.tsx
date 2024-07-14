@@ -1,6 +1,5 @@
-
 import Modal from "@/components/Modal";
-import PriceInfocard from "@/components/PriceInfocard";
+import PriceInfoCard from "@/components/PriceInfocard";
 import ProductCard from "@/components/ProductCard";
 import { getProductById, getSimilarProducts } from "@/lib/actions"
 import { formatNumber } from "@/lib/utils";
@@ -129,31 +128,30 @@ const ProductDetails = async ({ params: { id } }: Props) => {
 
           <div className="my-7 flex flex-col gap-5">
             <div className="flex gap-5 flex-wrap">
-              <PriceInfocard 
+              <PriceInfoCard 
                 title="Current Price"
                 iconSrc="/assets/icons/price-tag.svg"
                 value={`${product.currency} ${formatNumber(product.currentPrice)}`}
               />
-              <PriceInfocard 
+              <PriceInfoCard 
                 title="Average Price"
                 iconSrc="/assets/icons/chart.svg"
                 value={`${product.currency} ${formatNumber(product.averagePrice)}`}
               />
-              <PriceInfocard 
+              <PriceInfoCard 
                 title="Highest Price"
                 iconSrc="/assets/icons/arrow-up.svg"
                 value={`${product.currency} ${formatNumber(product.highestPrice)}`}
               />
-              <PriceInfocard 
+              <PriceInfoCard 
                 title="Lowest Price"
                 iconSrc="/assets/icons/arrow-down.svg"
                 value={`${product.currency} ${formatNumber(product.lowestPrice)}`}
               />
-            </div>  
+            </div>
           </div>
 
-          <Modal />
-
+          <Modal productId={id} />
         </div>
       </div>
 
@@ -181,15 +179,15 @@ const ProductDetails = async ({ params: { id } }: Props) => {
           </Link>
         </button>
       </div>
-      {similarProducts && similarProducts?.length>0 && (
+
+      {similarProducts && similarProducts?.length > 0 && (
         <div className="py-14 flex flex-col gap-2 w-full">
           <p className="section-text">Similar Products</p>
 
           <div className="flex flex-wrap gap-10 mt-7 w-full">
-            {similarProducts.map((product)=>(
+            {similarProducts.map((product) => (
               <ProductCard key={product._id} product={product} />
             ))}
-
           </div>
         </div>
       )}
