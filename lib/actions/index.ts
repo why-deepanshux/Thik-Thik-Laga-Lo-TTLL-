@@ -1,5 +1,5 @@
 "use server"
-
+// import { useRouter } from 'next/router';
 import { revalidatePath } from "next/cache";
 import Product from "../models/product.model";
 import { connectToDB } from "../mongoose";
@@ -9,6 +9,7 @@ import { User } from "@/types";
 import { generateEmailBody, sendEmail } from "../nodemailer";
 
 export async function scrapeAndStoreProduct(productUrl: string) {
+  // const router = useRouter();
   if(!productUrl) return;
 
   try {
@@ -43,7 +44,9 @@ export async function scrapeAndStoreProduct(productUrl: string) {
       { upsert: true, new: true }
     );
 
-    revalidatePath(`/products/${newProduct._id}`);
+    // revalidatePath(`/products/${newProduct._id}`);
+    return newProduct;
+    // await router.push('/products/[productId]', `/products/${newProduct._id}`);
   } catch (error: any) {
     throw new Error(`Failed to create/update product: ${error.message}`)
   }

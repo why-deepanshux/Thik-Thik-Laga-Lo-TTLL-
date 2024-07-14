@@ -1,16 +1,16 @@
 "use client"
-
+import { FormEvent, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { scrapeAndStoreProduct } from '@/lib/actions';
-import { FormEvent, useState } from 'react'
 
 const isValidAmazonProductURL = (url: string) => {
   try {
     const parsedURL = new URL(url);
     const hostname = parsedURL.hostname;
 
-    if(
-      hostname.includes('amazon.com') || 
-      hostname.includes ('amazon.') || 
+    if (
+      hostname.includes('amazon.com') ||
+      hostname.includes('amazon.') ||
       hostname.endsWith('amazon')
     ) {
       return true;
@@ -20,30 +20,32 @@ const isValidAmazonProductURL = (url: string) => {
   }
 
   return false;
-}
+};
 
 const Searchbar = () => {
   const [searchPrompt, setSearchPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const isValidLink = isValidAmazonProductURL(searchPrompt);
 
-    if(!isValidLink) return alert('Please provide a valid Amazon link')
+    if (!isValidLink) return alert('Please provide a valid Amazon link');
 
     try {
       setIsLoading(true);
 
       // Scrape the product page
       const product = await scrapeAndStoreProduct(searchPrompt);
+      router.push(`/products/${product._id}`); // Use custom hook for navigation
     } catch (error) {
       console.log(error);
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   return (
     <form 
@@ -66,7 +68,7 @@ const Searchbar = () => {
         {isLoading ? 'Searching...' : 'Search'}
       </button>
     </form>
-  )
-}
+  );
+};
 
-export default Searchbar
+export default Searchbar;
