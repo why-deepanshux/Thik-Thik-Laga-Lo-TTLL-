@@ -1,17 +1,21 @@
-"use client"
-import { FormEvent, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { scrapeAndStoreProduct } from '@/lib/actions';
+"use client";
 
-const isValidAmazonProductURL = (url: string) => {
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+
+import { scrapeAndStoreProduct } from "@/lib/actions";
+
+const isValidAmazonProductURL = (url: string): boolean => {
   try {
     const parsedURL = new URL(url);
     const hostname = parsedURL.hostname;
 
+    // Check if the hostname is amazon.com or amazon.{country-code}
     if (
-      hostname.includes('amazon.com') ||
-      hostname.includes('amazon.') ||
-      hostname.endsWith('amazon')
+      hostname === "amazon.com" ||
+      hostname.includes("amazon.") ||
+      hostname === "www.amazon.com" ||
+      hostname.includes("www.amazon.")
     ) {
       return true;
     }
@@ -23,23 +27,29 @@ const isValidAmazonProductURL = (url: string) => {
 };
 
 const Searchbar = () => {
-  const [searchPrompt, setSearchPrompt] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const [searchPrompt, setSearchPrompt] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const isValidLink = isValidAmazonProductURL(searchPrompt);
 
-    if (!isValidLink) return alert('Please provide a valid Amazon link');
+    if (!isValidLink) {
+      alert("Please enter a valid Amazon product link");
+    }
 
     try {
       setIsLoading(true);
 
       // Scrape the product page
       const product = await scrapeAndStoreProduct(searchPrompt);
-      router.push(`/products/${product._id}`); // Use custom hook for navigation
+
+      // Redirect to the product page if successful
+      if (product) {
+        router.push(`/products/${product}`);
+      }
     } catch (error) {
       console.log(error);
     } finally {
@@ -48,24 +58,20 @@ const Searchbar = () => {
   };
 
   return (
-    <form 
-      className="flex flex-wrap gap-4 mt-12" 
-      onSubmit={handleSubmit}
-    >
-      <input 
+    <form className="mt-12 flex flex-wrap gap-4" onSubmit={handleSubmit}>
+      <input
         type="text"
         value={searchPrompt}
         onChange={(e) => setSearchPrompt(e.target.value)}
         placeholder="Enter product link"
         className="searchbar-input"
       />
-
-      <button 
-        type="submit" 
+      <button
+        type="submit"
         className="searchbar-btn"
-        disabled={searchPrompt === ''}
+        disabled={searchPrompt === ""}
       >
-        {isLoading ? 'Searching...' : 'Search'}
+        {isLoading ? "Searching..." : "Search"}
       </button>
     </form>
   );
