@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-
 import { getLowestPrice, getHighestPrice, getAveragePrice, getEmailNotifType } from "@/lib/utils";
 import { connectToDB } from "@/lib/mongoose";
 import Product from "@/lib/models/product.model";
@@ -12,7 +11,7 @@ export const revalidate = 0;
 
 export async function GET(request: Request) {
   try {
-    connectToDB();
+    await connectToDB(); // Ensure the DB connection is awaited
 
     const products = await Product.find({});
 
@@ -24,7 +23,7 @@ export async function GET(request: Request) {
         // Scrape product
         const scrapedProduct = await scrapeAmazonProduct(currentProduct.url);
 
-        if (!scrapedProduct) return;
+        if (!scrapedProduct) return null;
 
         const updatedPriceHistory = [
           ...currentProduct.priceHistory,
@@ -46,7 +45,8 @@ export async function GET(request: Request) {
           {
             url: product.url,
           },
-          product
+          product,
+          { new: true } // Return the updated document
         );
 
         // ======================== 2 CHECK EACH PRODUCT'S STATUS & SEND EMAIL ACCORDINGLY
@@ -55,7 +55,7 @@ export async function GET(request: Request) {
           currentProduct
         );
 
-        if (emailNotifType && updatedProduct.users.length > 0) {
+        if (emailNotifType && updatedProduct && updatedProduct.users.length > 0) {
           const productInfo = {
             title: updatedProduct.title,
             url: updatedProduct.url,
@@ -74,9 +74,12 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       message: "Ok",
-      data: updatedProducts,
+      data: updatedProducts.filter(Boolean), // Filter out null values
     });
   } catch (error: any) {
-    throw new Error(`Failed to get all products: ${error.message}`);
+    console.error("Error fetching products:", error.message);
+    return NextResponse.json({
+      message: `Failed to get all products: ${error.message}`,
+    }, { status: 500 });
   }
 }
